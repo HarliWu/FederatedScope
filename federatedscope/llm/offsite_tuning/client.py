@@ -33,6 +33,9 @@ class OffsiteTuningClient(Client):
         self.register_handlers('emulator_and_adapter',
                                self.callback_funcs_for_emulator_and_adapter,
                                [None])
+        self.register_handlers('eval_plugin',
+                               self.callback_funcs_for_emulator_and_adapter,
+                               [None])
 
     def callback_funcs_for_emulator_and_adapter(self, message: Message):
         logger.info(f'Client {self.ID}: Emulator and adapter received.')

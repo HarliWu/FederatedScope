@@ -137,3 +137,10 @@ dmypy.json
 .idea/
 
 **/.DS_Store
+
+# data file is omittd
+data/
+
+# exp file is omitted
+exp/
+*.ckpt

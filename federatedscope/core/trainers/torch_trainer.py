@@ -89,6 +89,8 @@ class GeneralTorchTrainer(Trainer):
         # Due to lazy load, we merge two state dict
         merged_param = merge_param_dict(self.ctx.model.state_dict().copy(),
                                         self._param_filter(model_parameters))
+        print('Here is merged parameters...')
+        print(merged_param)
         self.ctx.model.load_state_dict(merged_param, strict=strict)
 
     def evaluate(self, target_data_split_name="test"):

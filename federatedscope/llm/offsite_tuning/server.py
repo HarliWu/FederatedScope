@@ -42,6 +42,10 @@ class OffsiteTuningServer(Server):
               self).__init__(ID, state, config, data, adap_model, client_num,
                              total_round_num, device, strategy, **kwargs)
 
+        # # Append a new model to the model list
+        # self.model_num += 1
+        # self.models.append(self.raw_model)
+
     def trigger_for_feat_engr(self,
                               trigger_train_func,
                               kwargs_for_trigger_train_func={}):
@@ -55,3 +59,24 @@ class OffsiteTuningServer(Server):
                     timestamp=self.cur_timestamp,
                     content=emulator_and_adapter))
         trigger_train_func(**kwargs_for_trigger_train_func)
+
+    def eval(self):
+        # Evaluate new emulator and adaptor
+        super().eval()
+
+        # Replace new emulator with original model
+        self.raw_model.load_state_dict(self.model.state_dict(), strict=False)
+        # dispatch the model to all clients
+        # TODO: debug this part, not finished yet
+        raw_model = b64serializer(self.raw_model, tool='dill')
+        self.comm_manager.send(
+            Message(msg_type='eval_plugin',
+                    sender=self.ID,
+                    receiver=list(self.comm_manager.get_neighbors().keys()),
+                    timestamp=self.cur_timestamp,
+                    content=raw_model))
+        pass
+
+    # TODO: merge plugin results and emulatopr results together
+    def _merge_and_format_eval_results(self):
+        return super()._merge_and_format_eval_results()
