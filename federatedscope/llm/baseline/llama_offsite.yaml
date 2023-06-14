@@ -1,5 +1,7 @@
-use_gpu: False
-device: 0
+use_gpu: True
+device: 2
+eval:
+  best_res_update_round_wise_key: 'emulator.val_loss'
 early_stop:
   patience: 10
 federate:
