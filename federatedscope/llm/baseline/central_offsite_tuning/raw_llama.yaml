@@ -1,0 +1,13 @@
+use_gpu: True
+device: 1
+early_stop:
+  patience: 10
+model:
+  type: 'decapoda-research/llama-13b-hf@huggingface_llm'
+criterion:
+  type: CrossEntropyLoss
+trainer:
+  type: llmtrainer
+# expname: "central-llm-baselines/raw-llama_gsm8k"
+# expname: "central-llm-baselines/raw-llama_dolly"
+expname: "central-llm-baselines/raw-llama_rosetta"

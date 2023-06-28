@@ -56,7 +56,8 @@ def main():
     # load your finetuned model (saved as xxx.ckpt)
     #    in yaml file federate.save_to
     fschatbot = FSChatBot(init_cfg)
-    out_file = f'{init_cfg.federate.save_to}_humaneval_answer.jsonl'
+    out_file = os.path.join(
+        init_cfg.outdir, f'{init_cfg.federate.save_to}_humaneval_answer.jsonl')
 
     # Get test file
     fp = os.path.join(init_cfg.data.root, 'HumanEval.jsonl.gz')

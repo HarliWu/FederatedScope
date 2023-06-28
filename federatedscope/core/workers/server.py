@@ -404,7 +404,8 @@ class Server(BaseServer):
 
         if self.state != self.total_round_num and \
                 self.state % self._cfg.federate.save_freq == 0:
-            path = f'{self.state}_' + self._cfg.federate.save_to
+            dirname, filename = os.path.split(self._cfg.federate.save_to)
+            path = os.path.join(dirname, f'{self.state}_' + filename)
             self.aggregator.save_model(path, self.state)
 
         if should_stop or self.state == self.total_round_num:
@@ -527,8 +528,9 @@ class Server(BaseServer):
         """
 
         if self._cfg.federate.save_to != '':
-            self.aggregator.save_model(f'final_{self._cfg.federate.save_to}',
-                                       self.state)
+            dirname, filename = os.path.split(self._cfg.federate.save_to)
+            path = os.path.join(dirname, f'final_{filename}')
+            self.aggregator.save_model(path, self.state)
         formatted_best_res = self._monitor.format_eval_res(
             results=self.best_results,
             rnd="Final",

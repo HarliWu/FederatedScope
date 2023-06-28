@@ -5,6 +5,7 @@ import os
 import random
 import transformers
 from tqdm import tqdm
+import logging
 
 from federatedscope.core.configs.config import global_cfg
 from federatedscope.core.cmd_args import parse_args, parse_client_cfg
@@ -15,6 +16,7 @@ from federatedscope.llm.dataloader.dataloader import load_jsonl
 from federatedscope.llm.misc.fschat import FSChatBot
 
 transformers.logging.set_verbosity(40)
+logger = logging.getLogger(__name__)
 
 ANS_RE = re.compile(r"#### (\-?[0-9\.\,]+)")
 INVALID_ANS = "[invalid]"
@@ -189,8 +191,12 @@ def main():
 
     list_data_dict = load_jsonl(fp, instruction='question', output='answer')
 
+    # Print result to a text file
+    results_display = open(os.path.join(init_cfg.outdir, 'test_results.txt'),
+                           'w')
     answers = []
-    for sample in tqdm(list_data_dict):
+    testset = tqdm(list_data_dict)
+    for sample in testset:
         input_text = build_prompt(sample['instruction'], N_SHOT, COT_FLAG)
         generate_kwargs = dict(max_new_tokens=256, top_p=0.95, temperature=0.8)
         model_completion = fschatbot.generate(input_text, generate_kwargs)
@@ -199,15 +205,29 @@ def main():
         answers.append(is_cor)
         if DEBUG:
             print(f'Full input_text:\n{input_text}\n\n')
-        print(f'Question: {sample["instruction"]}\n\n'
-              f'Answers: {extract_answer_from_output(sample["output"])}\n\n'
-              f'Model Answers: {model_answer}\n\n'
-              f'Model Completion: {model_completion}\n\n'
-              f'Is correct: {is_cor}\n\n')
+        results_display.write(
+            f'Question {len(answers)}: {sample["instruction"]}\n\n'
+            f'Answers: {extract_answer_from_output(sample["output"])}\n\n'
+            f'Model Answers: {model_answer}\n\n'
+            f'Model Completion: {model_completion}\n\n'
+            f'Is correct: {is_cor}\n\n')
+        results_display.write('==========================\n\n')
+        results_display.flush()
+        testset.set_postfix({
+            'correct': sum(answers),
+            'rate': '{:.2f}%'.format(float(sum(answers)) / len(answers) * 100)
+        })
+        # print(f'Question: {sample["instruction"]}\n\n'
+        #       f'Answers: {extract_answer_from_output(sample["output"])}\n\n'
+        #       f'Model Answers: {model_answer}\n\n'
+        #       f'Model Completion: {model_completion}\n\n'
+        #       f'Is correct: {is_cor}\n\n')
 
-        print(f'Num of total question: {len(answers)}, '
-              f'correct num: {sum(answers)}, '
-              f'correct rate: {float(sum(answers))/len(answers)}.')
+    results_display.write(f'Num of total question: {len(answers)}, '
+                          f'correct num: {sum(answers)}, '
+                          f'correct rate: {float(sum(answers))/len(answers)}.')
+    results_display.flush()
+    results_display.close()
 
 
 if __name__ == "__main__":
